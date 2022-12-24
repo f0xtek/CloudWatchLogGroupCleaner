@@ -1,0 +1,14 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+boto3 = "*"
+boto3-stubs = {extras = ["logs"], version = "*"}
+
+[dev-packages]
+mypy = "*"
+
+[requires]
+python_version = "3.9"
