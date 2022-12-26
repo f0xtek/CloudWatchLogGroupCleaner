@@ -35,9 +35,9 @@ class LogGroup:
                 return True
             return False
 
-    def delete(self, client) -> None:
+    def delete(self, client: CloudWatchLogsClient) -> None:
         if self.__prompt_for_deletion():
-            tries = 0
+            tries: int = 0
             try:
                 client.delete_log_group(logGroupName=self.name)
                 print(f"Deleted Log Group {self.name}")
