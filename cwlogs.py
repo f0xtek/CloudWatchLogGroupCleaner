@@ -35,13 +35,25 @@ class LogGroup:
                 return True
             return False
 
-    def delete(self) -> None:
+    def delete(self, client) -> None:
         if self.__prompt_for_deletion():
-            # TODO: implement
-            print(f"Deleted log group {self.name}")
+            tries = 0
+            try:
+                client.delete_log_group(logGroupName=self.name)
+                print(f"Deleted Log Group {self.name}")
+            except client.exceptions.ResourceNotFoundException:
+                print(f"Log Group {self.name} does not exist")
+            except client.exceptions.OperationAbortedException as err:
+                print(f"Delete Log Group {self.name} operation aborted: {err}")
+            except client.exceptions.ServiceUnavailableException as err:
+                print(f"Error: {err}")
+                if tries == 3:
+                    print(f"Skipping deletion of Log Group {self.name}.")
+                    return
+                tries += 1
+                print("Retrying")
         else:
-            # TODO: implement
-            print(f"Did not delete log group {self.name}")
+            print(f"Deletion of Log Group {self.name} skipped.")
 
 
 def create_logs_client() -> CloudWatchLogsClient:
@@ -51,7 +63,7 @@ def create_logs_client() -> CloudWatchLogsClient:
 def delete_log_groups(client: CloudWatchLogsClient):
     log_groups: list[LogGroupTypeDef] = __describe_cloudwatch_log_groups(client)
     for log_group_object in __create_log_groups(log_groups):
-        log_group_object.delete()
+        log_group_object.delete(client)
 
 
 def __create_log_groups(log_groups_response: list[LogGroupTypeDef]) -> list[LogGroup]:
@@ -68,9 +80,12 @@ def __create_log_groups(log_groups_response: list[LogGroupTypeDef]) -> list[LogG
 
 
 def __print_log_groups(log_groups: list[LogGroup]):
-    print("Found log groups:")
-    for log_group in log_groups:
-        print(log_group)
+    if log_groups:
+        print("Found Log Groups:")
+        for log_group in log_groups:
+            print(log_group)
+    else:
+        print("No Log Groups found.")
 
 
 def __describe_cloudwatch_log_groups(client: CloudWatchLogsClient) -> list[LogGroupTypeDef]:
