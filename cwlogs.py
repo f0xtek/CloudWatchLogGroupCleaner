@@ -69,12 +69,13 @@ def delete_log_groups(client: CloudWatchLogsClient):
 def __create_log_groups(log_groups_response: list[LogGroupTypeDef]) -> list[LogGroup]:
     log_group_objects: list[LogGroup] = []
     for log_group in log_groups_response:
-        lg_name: str = log_group['logGroupName']
-        lg_arn: str = log_group['arn']
-        lg_retention: Optional[int] = log_group.get('retentionInDays', None)
-        log_group_objects.append(
-            LogGroup(lg_name, lg_arn, lg_retention)
-        )
+        if "aws/lambda" in log_group['logGroupName']:
+            lg_name: str = log_group['logGroupName']
+            lg_arn: str = log_group['arn']
+            lg_retention: Optional[int] = log_group.get('retentionInDays', None)
+            log_group_objects.append(
+                LogGroup(lg_name, lg_arn, lg_retention)
+            )
     __print_log_groups(log_group_objects)
     return log_group_objects
 
